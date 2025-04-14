@@ -27,7 +27,7 @@ let cart = [];
 function checkRestaurantOpen() {
     const date = new Date();
     const hour = date.getHours();
-    return hour >= 18 && hour <= 22;
+    return hour >= 18 && hour <= 21;
 }
 
 function updateOpenStatus() {
