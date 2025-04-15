@@ -9,8 +9,8 @@ const deliveryInformationBtn = document.getElementById("Delivery-information");
 const checkoutModal = document.getElementById("checkout-modal");
 
 const closeModalBtn = document.getElementById("close-cart-btn");
-const closeCheckoutBtn = document.getElementById("close-checkout-btn"); // Botão de fechar checkout
-const backToCartBtn = document.getElementById("back-to-cart-btn"); // Botão de voltar ao carrinho
+const closeCheckoutBtn = document.getElementById("close-checkout-btn");
+const backToCartBtn = document.getElementById("back-to-cart-btn");
 const cartCounter = document.getElementById("cart-count");
 const addressInput = document.getElementById("address");
 const nameInput = document.getElementById("name-client");
@@ -25,9 +25,8 @@ let cart = [];
 
 // Verifica horário e atualiza status de funcionamento
 function checkRestaurantOpen() {
-    const date = new Date();
-    const hour = date.getHours();
-    return hour >= 18 && hour <= 22;
+    const hour = new Date().getHours();
+    return hour >= 18 && hour <= 21;
 }
 
 function updateOpenStatus() {
@@ -44,22 +43,16 @@ cartBtn.addEventListener("click", () => {
     cartModal.style.display = "flex";
 });
 
-// Fechar modal do carrinho
-closeModalBtn.addEventListener("click", () => {
-    cartModal.style.display = "none";
-});
+// Fechar modais
+closeModalBtn.addEventListener("click", () => cartModal.style.display = "none");
+closeCheckoutBtn.addEventListener("click", () => checkoutModal.style.display = "none");
 
-// Fechar modal do checkout
-closeCheckoutBtn.addEventListener("click", () => {
-    checkoutModal.style.display = "none";
-});
-
-// Voltar ao carrinho
 backToCartBtn.addEventListener("click", () => {
     checkoutModal.style.display = "none";
-    cartModal.style.display = "flex"; // Mostrar o carrinho novamente
+    cartModal.style.display = "flex";
 });
 
+// Fechar o carrinho ao clicar fora
 cartModal.addEventListener("click", (event) => {
     if (event.target === cartModal) {
         cartModal.style.display = "none";
@@ -84,9 +77,9 @@ function addToCart(name, price) {
         cart.push({ name, price, quantity: 1 });
     }
     updateCartModal();
+    mostrarPopupItemAdicionado(name);
 }
 
-// Atualizar carrinho
 function updateCartModal() {
     cartItemContainer.innerHTML = "";
     let total = 0;
@@ -99,13 +92,15 @@ function updateCartModal() {
             <div class="flex items-center justify-between">
                 <div>
                     <p class="font-medium">${item.name}</p>
-                    <p>Qtd: ${item.quantity}</p>
+                    <div class="flex items-center space-x-4">
+                        <button class="change-quantity-btn" data-name="${item.name}" data-action="decrease">-</button>
+                        <p class="quantity-text">${item.quantity}</p>
+                        <button class="change-quantity-btn" data-name="${item.name}" data-action="increase">+</button>
+                    </div>
                     <p class="font-medium mt-2">R$ ${item.price.toFixed(2)}</p>
                 </div>
-                <button class="remove-from-cart-btn" data-name="${item.name}">Remover</button>
             </div>
         `;
-
         cartItemContainer.appendChild(itemElement);
         total += item.price * item.quantity;
     });
@@ -118,11 +113,18 @@ function updateCartModal() {
     cartCounter.textContent = cart.length;
 }
 
-// Remover item
+// Alterar quantidade
 cartItemContainer.addEventListener("click", (event) => {
-    if (event.target.classList.contains("remove-from-cart-btn")) {
-        const name = event.target.getAttribute("data-name");
-        removeItemCart(name);
+    const button = event.target;
+    const name = button.getAttribute("data-name");
+    const action = button.getAttribute("data-action");
+
+    if (button.classList.contains("change-quantity-btn")) {
+        if (action === "decrease") {
+            removeItemCart(name);
+        } else if (action === "increase") {
+            addToCart(name, getItemPrice(name));
+        }
     }
 });
 
@@ -135,28 +137,35 @@ function removeItemCart(name) {
             cart.splice(index, 1);
         }
         updateCartModal();
+        mostrarPopupItemRemovido(name);
     }
+}
+
+function getItemPrice(name) {
+    const item = cart.find(item => item.name === name);
+    return item ? item.price : 0;
 }
 
 // Ir para o checkout
 deliveryInformationBtn.addEventListener("click", () => {
-    cartModal.style.display = "none";
-    checkoutModal.style.display = "flex";
+    if (cart.length > 0) {
+        cartModal.style.display = "none";
+        checkoutModal.style.display = "flex";
+    }
 });
 
-// Esconder aviso ao digitar nome
+// Remover avisos ao digitar
 nameInput.addEventListener("input", () => {
     nameWarn.classList.add("hidden");
     nameInput.classList.remove("border-red-500");
 });
 
-// Esconder aviso ao digitar endereço
 addressInput.addEventListener("input", () => {
     addressWarn.classList.add("hidden");
     addressInput.classList.remove("border-red-500");
 });
 
-// Finalizar pedido e enviar para WhatsApp
+// Finalizar pedido
 checkoutBtn.addEventListener("click", () => {
     const isOpen = checkRestaurantOpen();
     if (!isOpen) {
@@ -166,22 +175,23 @@ checkoutBtn.addEventListener("click", () => {
 
     if (cart.length === 0) return;
 
-    // Validação do campo nome
-    if (nameInput.value.trim() === "") {
+    const name = nameInput.value.trim();
+    const address = addressInput.value.trim();
+    const paymentMethod = document.querySelector('input[name="payment-method"]:checked');
+
+    if (!name) {
         nameWarn.classList.remove("hidden");
         nameInput.classList.add("border-red-500");
         return;
     }
 
-    // Validação do campo endereço
-    if (addressInput.value.trim() === "") {
+    if (!address) {
         addressWarn.classList.remove("hidden");
         addressInput.classList.add("border-red-500");
         return;
     }
 
-    const selectedPayment = document.querySelector('input[name="payment-method"]:checked');
-    if (!selectedPayment) {
+    if (!paymentMethod) {
         paymentWarn.classList.remove("hidden");
         return;
     } else {
@@ -196,22 +206,56 @@ checkoutBtn.addEventListener("click", () => {
         `*Itens do Pedido:*\n${cartItems}\n` +
         `*Total:* R$ ${totalAmount.toFixed(2)}\n\n` +
         `*Informações de Entrega:*\n` +
-        `Cliente: ${nameInput.value}\n` +
-        `Endereço: ${addressInput.value}\n` +
-        `Pagamento: ${selectedPayment.value}`
+        `Cliente: ${name}\n` +
+        `Endereço: ${address}\n` +
+        `Pagamento: ${paymentMethod.value}`
     );
 
     const phone = "5588921485651";
     window.open(`https://wa.me/${phone}?text=${message}`, "_blank");
 });
 
-// Popup restaurante fechado
+// Popups
 function mostrarPopupRestauranteFechado() {
-    document.getElementById("popup-fechado").classList.remove("hidden");
-    document.getElementById("overlay").classList.remove("hidden");
+    const popup = document.getElementById("popup-fechado");
+    const overlay = document.getElementById("overlay");
+
+    popup.classList.remove("hidden");
+    overlay.classList.remove("hidden");
 
     setTimeout(() => {
-        document.getElementById("popup-fechado").classList.add("hidden");
-        document.getElementById("overlay").classList.add("hidden");
+        popup.classList.add("hidden");
+        overlay.classList.add("hidden");
     }, 3000);
+}
+
+function mostrarPopupItemAdicionado(nome) {
+    const item = cart.find(item => item.name === nome);
+    const quantidade = item ? item.quantity : 1;
+
+    const popup = document.getElementById("popup-adicionado");
+    popup.textContent = `✔️ ${quantidade}x ${nome} adicionado ao carrinho!`;
+
+    popup.classList.remove("hidden", "opacity-0");
+    popup.classList.add("opacity-100");
+
+    setTimeout(() => {
+        popup.classList.add("opacity-0");
+        setTimeout(() => popup.classList.add("hidden"), 500);
+    }, 5000);
+}
+
+function mostrarPopupItemRemovido(nome) {
+    const quantidade = (cart.find(item => item.name === nome)?.quantity || 0) + 1;
+
+    const popup = document.getElementById("popup-removido");
+    popup.textContent = `❌ ${quantidade}x ${nome} removido do carrinho!`;
+
+    popup.classList.remove("hidden", "opacity-0");
+    popup.classList.add("opacity-100");
+
+    setTimeout(() => {
+        popup.classList.add("opacity-0");
+        setTimeout(() => popup.classList.add("hidden"), 500);
+    }, 4000);
 }
