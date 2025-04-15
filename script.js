@@ -25,14 +25,8 @@ let cart = [];
 
 // Verifica horário e atualiza status de funcionamento
 function checkRestaurantOpen() {
-<<<<<<< HEAD
     const hour = new Date().getHours();
-    return hour >= 18 && hour <= 21;
-=======
-    const date = new Date();
-    const hour = date.getHours();
-    return hour >= 8 && hour <= 21;
->>>>>>> 0df50c91b78ebfe04d88ddb23a4981eef053b887
+    return hour >= 18 && hour <= 21; // Altere conforme o horário real do seu restaurante
 }
 
 function updateOpenStatus() {
@@ -122,15 +116,15 @@ function updateCartModal() {
 // Alterar quantidade
 cartItemContainer.addEventListener("click", (event) => {
     const button = event.target;
+    if (!button.classList.contains("change-quantity-btn")) return;
+
     const name = button.getAttribute("data-name");
     const action = button.getAttribute("data-action");
 
-    if (button.classList.contains("change-quantity-btn")) {
-        if (action === "decrease") {
-            removeItemCart(name);
-        } else if (action === "increase") {
-            addToCart(name, getItemPrice(name));
-        }
+    if (action === "decrease") {
+        removeItemCart(name);
+    } else if (action === "increase") {
+        addToCart(name, getItemPrice(name));
     }
 });
 
