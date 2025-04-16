@@ -11,22 +11,30 @@
     <title>Dev Burguer - A melhor haburgueria dev</title>
 </head>
 <body>
-    <!--HEADER-->
     <header class="w-full h-[420px] bg-zinc-900 bg-home bg-cover bg-center">
         <div class="w-full h-full flex flex-col justify-center items-center">
-            <img src="./assets/hamb-1.png" alt="logo DevBurguer" class="w-32 h-32 rounded-full shadow-lg hover:scale-110 duration-200">
-            
-            <h1 class="text-4xl mt-4 mb-2 font-bold text-white">Dev Burguer</h1>
-            <span class="text-white font-medium">Rua dev 10, centro, Campo Grande - MS</span>
-
-            <div class="bg-green-600 px-4 py-1 rounded-lg mt-5" id="date-span">
-                <span class="text-white font-medium">Seg á Dom - 18:00 às 22:00</span>
-            </div>
+          <img src="./assets/hamb-1.png" alt="logo DevBurguer" class="w-32 h-32 rounded-full shadow-lg hover:scale-110 duration-200" />
+          
+          <h1 class="text-4xl mt-4 mb-2 font-bold text-white">Dev Burguer</h1>
+          <span class="text-white font-medium">Rua dev 10, centro, Campo Grande - MS</span>
+      
+          <div class="bg-green-600 px-4 py-1 rounded-lg mt-5" id="date-span">
+            <span class="text-white font-medium">Seg á Dom - 18:00 às 22:00</span>
+          </div>
         </div>
-    </header>
-    <!--FIM HEADER-->
-
-    <h2 class="text-2xl md:text-3xl font-bold text-center mt-9 mb-6">Conheça o nosso menu</h2>
+      </header>
+      <!-- FIM HEADER -->
+      
+<!-- MENU NAVIGATION -->
+<nav class="flex justify-start gap-6 overflow-x-auto mb-0 px-5 pt-4 md:justify-center sticky top-0 bg-white z-10">
+    <a href="#menu" class="text-lg font-medium text-gray-800 hover:text-green-600 whitespace-nowrap">Hamburgueres</a>
+    <a href="#bebidas" class="text-lg font-medium text-gray-800 hover:text-green-600 whitespace-nowrap">Bebidas</a>
+    <a href="#saladas" class="text-lg font-medium text-gray-800 hover:text-green-600 whitespace-nowrap">Saladas</a>
+    <a href="#sobremesas" class="text-lg font-medium text-gray-800 hover:text-green-600 whitespace-nowrap">Sobremesas</a>
+    <!-- Adicione outros links de seções aqui -->
+</nav>
+  
+    <h2 class="text-2xl md:text-3xl font-bold text-center mt-4 mb-6">Conheça o nosso menu</h2>
     
 <!-- INICIO MENU -->
 <div id="menu">
@@ -182,7 +190,7 @@
 </div>
 
 <!--INICIO GRID BEBIDAS-->
-<div class="grid grid-cols-1 md:grid-cols-2 gap-7 md:gap-10 mx-auto max-w-7xl px-2 mb-16" id="menu">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-7 md:gap-10 mx-auto max-w-7xl px-2 mb-16" id="bebidas" id="menu">
     <!-- BEBIDA 1-->
     <div class="flex gap-2 w-full">
         <img src="/assets/refri-1.png" alt="Coca lata" class="w-28 h-28 rounded-md hover:scale-110 hover:rotate-2 duration-300">
@@ -310,9 +318,9 @@
     <!-- Popup de item removido -->
     <div id="popup-removido" class=" fixed top-20 right-5 bg-red-600 text-white px-6 py-3 rounded-lg shadow-lg z-50 transition-all duration-500 opacity-0 w-72 h-16 flex items-center justify-center">
         Item removido do carrinho!
-    </div>
-
+    </div>  
     
+  
  <!--INICIO CART FOOTER-->
 <footer class="w-full bg-red-500 py-3 fixed bottom-0 z-40 flex items-center justify-center">
     <button class="flex items-center gap-2 text-white font-bold" id="cart-btn">

@@ -258,4 +258,6 @@ function mostrarPopupItemRemovido(nome) {
         popup.classList.add("opacity-0");
         setTimeout(() => popup.classList.add("hidden"), 500);
     }, 4000);
+
+    
 }
