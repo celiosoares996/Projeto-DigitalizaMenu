@@ -26,7 +26,7 @@ let cart = [];
 // Verifica horário e atualiza status de funcionamento
 function checkRestaurantOpen() {
     const hour = new Date().getHours();
-    return hour >= 7 && hour <= 21; // Altere conforme o horário real do seu restaurante
+    return hour >= 18 && hour <= 21; // Altere conforme o horário real do seu restaurante
 }
 
 function updateOpenStatus() {
