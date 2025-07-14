@@ -110,7 +110,9 @@ function updateCartModal() {
         currency: "BRL"
     });
 
-    cartCounter.textContent = cart.length;
+    // CORREÇÃO APLICADA: contador agora soma a quantidade total de unidades
+    const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+    cartCounter.textContent = totalItems;
 }
 
 // Alterar quantidade
@@ -258,6 +260,4 @@ function mostrarPopupItemRemovido(nome) {
         popup.classList.add("opacity-0");
         setTimeout(() => popup.classList.add("hidden"), 500);
     }, 4000);
-
-    
 }
