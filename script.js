@@ -251,15 +251,11 @@ function mostrarPopupItemAdicionado(nome) {
 }
 
 function mostrarPopupItemRemovido(nome) {
-    // Atualiza o contador de removidos por item
-    if (!contagemRemovidos[nome]) {
-        contagemRemovidos[nome] = 1;
-    } else {
-        contagemRemovidos[nome]++;
-    }
+    const item = cart.find(item => item.name === nome);
+    const quantidadeRestante = item ? item.quantity : 0;
 
     const popup = document.getElementById("popup-removido");
-    popup.textContent = `❌ ${contagemRemovidos[nome]}x ${nome} removido!`;
+    popup.textContent = `❌ ${quantidadeRestante}x ${nome} no carrinho!`;
 
     popup.classList.remove("hidden", "opacity-0");
     popup.classList.add("opacity-100");
@@ -269,7 +265,6 @@ function mostrarPopupItemRemovido(nome) {
         setTimeout(() => popup.classList.add("hidden"), 500);
     }, 4000);
 }
-
 
 function mostrarPopupCarrinhoVazio() {
     const popup = document.getElementById("popup-carrinho-vazio");
