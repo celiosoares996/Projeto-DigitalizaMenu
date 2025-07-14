@@ -153,8 +153,11 @@ deliveryInformationBtn.addEventListener("click", () => {
     if (cart.length > 0) {
         cartModal.style.display = "none";
         checkoutModal.style.display = "flex";
+    } else {
+        mostrarPopupCarrinhoVazio();
     }
 });
+
 
 // Remover avisos ao digitar
 nameInput.addEventListener("input", () => {
@@ -248,10 +251,11 @@ function mostrarPopupItemAdicionado(nome) {
 }
 
 function mostrarPopupItemRemovido(nome) {
-    const quantidade = (cart.find(item => item.name === nome)?.quantity || 0) + 1;
+    const item = cart.find(item => item.name === nome);
+    const quantidadeRestante = item ? item.quantity : 0;
 
     const popup = document.getElementById("popup-removido");
-    popup.textContent = `❌ ${quantidade}x ${nome} removido do carrinho!`;
+    popup.textContent = `❌ ${quantidadeRestante}x ${nome} no carrinho!`;
 
     popup.classList.remove("hidden", "opacity-0");
     popup.classList.add("opacity-100");
@@ -261,3 +265,15 @@ function mostrarPopupItemRemovido(nome) {
         setTimeout(() => popup.classList.add("hidden"), 500);
     }, 4000);
 }
+
+function mostrarPopupCarrinhoVazio() {
+    const popup = document.getElementById("popup-carrinho-vazio");
+    popup.classList.remove("hidden", "opacity-0");
+    popup.classList.add("opacity-100");
+
+    setTimeout(() => {
+        popup.classList.add("opacity-0");
+        setTimeout(() => popup.classList.add("hidden"), 500);
+    }, 5000);
+}
+
