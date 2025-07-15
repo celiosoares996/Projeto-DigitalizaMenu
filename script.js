@@ -21,12 +21,22 @@ const paymentWarn = document.getElementById("payment-warn");
 
 const spanItem = document.getElementById("date-span");
 
+// Elementos do novo modal de escolha
+const escolhaModal = document.getElementById("modal-escolha");
+const btnEntrega = document.getElementById("btn-entrega");
+const btnRetirada = document.getElementById("btn-retirada");
+const btnCancelarEscolha = document.getElementById("btn-cancelar-escolha");
+
+// Novo container do campo de endereço
+const enderecoContainer = addressInput.closest(".input-group") || addressInput.parentElement;
+
 let cart = [];
+let tipoPedido = ""; // "entrega" ou "retirada"
 
 // Verifica horário e atualiza status de funcionamento
 function checkRestaurantOpen() {
     const hour = new Date().getHours();
-    return hour >= 18 && hour <= 21; // Altere conforme o horário real do seu restaurante
+    return hour >= 7 && hour <= 22;
 }
 
 function updateOpenStatus() {
@@ -37,13 +47,11 @@ function updateOpenStatus() {
 
 updateOpenStatus();
 
-// Ações do botão de abrir carrinho
 cartBtn.addEventListener("click", () => {
     updateCartModal();
     cartModal.style.display = "flex";
 });
 
-// Fechar modais
 closeModalBtn.addEventListener("click", () => cartModal.style.display = "none");
 closeCheckoutBtn.addEventListener("click", () => checkoutModal.style.display = "none");
 
@@ -52,14 +60,12 @@ backToCartBtn.addEventListener("click", () => {
     cartModal.style.display = "flex";
 });
 
-// Fechar o carrinho ao clicar fora
 cartModal.addEventListener("click", (event) => {
     if (event.target === cartModal) {
         cartModal.style.display = "none";
     }
 });
 
-// Adicionar item ao carrinho
 menu.addEventListener("click", (event) => {
     const button = event.target.closest(".add-to-cart-btn");
     if (button) {
@@ -110,12 +116,10 @@ function updateCartModal() {
         currency: "BRL"
     });
 
-    // CORREÇÃO APLICADA: contador agora soma a quantidade total de unidades
     const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
     cartCounter.textContent = totalItems;
 }
 
-// Alterar quantidade
 cartItemContainer.addEventListener("click", (event) => {
     const button = event.target;
     if (!button.classList.contains("change-quantity-btn")) return;
@@ -137,6 +141,7 @@ function removeItemCart(name) {
             cart[index].quantity -= 1;
         } else {
             cart.splice(index, 1);
+            delete remocoesPorItem[name];
         }
         updateCartModal();
         mostrarPopupItemRemovido(name);
@@ -148,18 +153,34 @@ function getItemPrice(name) {
     return item ? item.price : 0;
 }
 
-// Ir para o checkout
 deliveryInformationBtn.addEventListener("click", () => {
     if (cart.length > 0) {
         cartModal.style.display = "none";
-        checkoutModal.style.display = "flex";
+        escolhaModal.classList.remove("hidden");
     } else {
         mostrarPopupCarrinhoVazio();
     }
 });
 
+btnEntrega.addEventListener("click", () => {
+    tipoPedido = "entrega";
+    escolhaModal.classList.add("hidden");
+    checkoutModal.style.display = "flex";
+    enderecoContainer.classList.remove("hidden");
+});
 
-// Remover avisos ao digitar
+btnRetirada.addEventListener("click", () => {
+    tipoPedido = "retirada";
+    escolhaModal.classList.add("hidden");
+    checkoutModal.style.display = "flex";
+    enderecoContainer.classList.add("hidden");
+});
+
+btnCancelarEscolha.addEventListener("click", () => {
+    escolhaModal.classList.add("hidden");
+    cartModal.style.display = "flex";
+});
+
 nameInput.addEventListener("input", () => {
     nameWarn.classList.add("hidden");
     nameInput.classList.remove("border-red-500");
@@ -170,7 +191,6 @@ addressInput.addEventListener("input", () => {
     addressInput.classList.remove("border-red-500");
 });
 
-// Finalizar pedido
 checkoutBtn.addEventListener("click", () => {
     const isOpen = checkRestaurantOpen();
     if (!isOpen) {
@@ -180,6 +200,10 @@ checkoutBtn.addEventListener("click", () => {
 
     if (cart.length === 0) return;
 
+    enviarPedidoParaWhatsapp();
+});
+
+function enviarPedidoParaWhatsapp() {
     const name = nameInput.value.trim();
     const address = addressInput.value.trim();
     const paymentMethod = document.querySelector('input[name="payment-method"]:checked');
@@ -190,7 +214,7 @@ checkoutBtn.addEventListener("click", () => {
         return;
     }
 
-    if (!address) {
+    if (tipoPedido === "entrega" && !address) {
         addressWarn.classList.remove("hidden");
         addressInput.classList.add("border-red-500");
         return;
@@ -206,21 +230,22 @@ checkoutBtn.addEventListener("click", () => {
     const cartItems = cart.map(item => `${item.quantity}x ${item.name} - R$${item.price.toFixed(2)}`).join("\n");
     const totalAmount = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
-    const message = encodeURIComponent(
-        `*Comanda do Pedido*\n\n` +
+    let message = `*Comanda do Pedido*\n\n` +
         `*Itens do Pedido:*\n${cartItems}\n` +
         `*Total:* R$ ${totalAmount.toFixed(2)}\n\n` +
-        `*Informações de Entrega:*\n` +
-        `Cliente: ${name}\n` +
-        `Endereço: ${address}\n` +
-        `Pagamento: ${paymentMethod.value}`
-    );
+        `*Cliente:* ${name}\n` +
+        `Pagamento: ${paymentMethod.value}\n`;
+
+    if (tipoPedido === "retirada") {
+        message += "*Tipo de Pedido:* Retirada no local";
+    } else {
+        message += `*Tipo de Pedido:* Entrega\nEndereço: ${address}`;
+    }
 
     const phone = "5588921485651";
-    window.open(`https://wa.me/${phone}?text=${message}`, "_blank");
-});
+    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, "_blank");
+}
 
-// Popups
 function mostrarPopupRestauranteFechado() {
     const popup = document.getElementById("popup-fechado");
     const overlay = document.getElementById("overlay");
@@ -250,9 +275,26 @@ function mostrarPopupItemAdicionado(nome) {
     }, 5000);
 }
 
+const remocoesPorItem = {};
+
 function mostrarPopupItemRemovido(nome) {
+    if (!remocoesPorItem[nome]) {
+        remocoesPorItem[nome] = 1;
+    } else {
+        remocoesPorItem[nome]++;
+    }
+
+    const item = cart.find(item => item.name === nome);
+    const totalRemovido = remocoesPorItem[nome];
+    const quantidadeRestante = item ? item.quantity : 0;
+    const quantidadeTotalAdicionada = totalRemovido + quantidadeRestante;
+
+    if (totalRemovido > quantidadeTotalAdicionada) {
+        remocoesPorItem[nome] = quantidadeTotalAdicionada;
+    }
+
     const popup = document.getElementById("popup-removido");
-    popup.textContent = `❌ 1x ${nome} removido do carrinho!`;
+    popup.textContent = `❌ ${remocoesPorItem[nome]}x ${nome} removido do carrinho!`;
 
     popup.classList.remove("hidden", "opacity-0");
     popup.classList.add("opacity-100");
@@ -260,7 +302,7 @@ function mostrarPopupItemRemovido(nome) {
     setTimeout(() => {
         popup.classList.add("opacity-0");
         setTimeout(() => popup.classList.add("hidden"), 500);
-    }, 2000);
+    }, 4000);
 }
 
 function mostrarPopupCarrinhoVazio() {
@@ -273,4 +315,3 @@ function mostrarPopupCarrinhoVazio() {
         setTimeout(() => popup.classList.add("hidden"), 500);
     }, 5000);
 }
-
